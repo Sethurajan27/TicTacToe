@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <video autoplay muted loop id="bgVideo">
+            <source src="candy.mp4" type="video/mp4">
+        </video>
+        <h1 class="rainbow-text">Tic Tac Toe</h1>
+        <div class="status" id="status">Player X's Turn</div>
+        <div class="game-board" id="board">
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+        </div>
+        <div class="button-container">
+            <button id="undoButton">Undo</button>
+            <button id="restartButton">Restart</button>
+        </div>
+    </div>
+
+    <div class="popup" id="winPopup">
+        <div class="popup-content">
+            <div class="glitter-container"></div>
+            <h2 id="winnerText"></h2>
+            <button id="closePopup">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="clickSound" preload="auto">
+        <source src="click.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound" preload="auto">
+        <source src="win.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="bonkSound" preload="auto">
+        <source src="bonk.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
