@@ -2,55 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tic Tac Toe - Home</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
     <style>
-        .home-buttons {
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
             justify-content: center;
             align-items: center;
-            margin-top: 2rem;
+            min-height: 100vh;
         }
-
-        .home-button {
-            padding: 0.8rem 1.5rem;
-            font-size: 1.2rem;
-            background-color: #198754;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            width: 200px;
-        }
-
-        .home-button:hover {
-            background-color: #157347;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 60vh;
+        video {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1/1;
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="bgVideo">
-        <source src="candy.mp4" type="video/mp4">
+    <video id="introVideo" autoplay muted>
+        <source src="rdrjs.mp4" type="video/mp4">
+        Your browser does not support the video tag.
     </video>
-    <div class="container">
-        <h1 class="rainbow-text">Tic Tac Toe</h1>
-        <div class="home-buttons">
-            <button class="home-button" onclick="window.location.href='online.html'">Online Mode</button>
-            <button class="home-button" onclick="window.location.href='offlineMode.html'">Offline Mode</button>
-            <button class="home-button" onclick="window.close()">Exit</button>
-        </div>
-    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('introVideo');
+            
+            video.addEventListener('ended', function() {
+                window.location.href = 'home.html';
+            });
+
+            // Fallback: If video fails to load, redirect after 5 seconds
+            video.addEventListener('error', function() {
+                setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 </html>

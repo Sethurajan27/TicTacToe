@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -27,13 +28,18 @@
             font-size: 24px;
             cursor: pointer;
             display: flex;
-            align-items: center;      /* Vertical centering */
-            justify-content: center;  /* Horizontal centering */
+            align-items: center;
+            /* Vertical centering */
+            justify-content: center;
+            /* Horizontal centering */
             transition: background-color 0.2s;
             backdrop-filter: blur(5px);
-            line-height: 1;          /* Reset line height */
-            padding: 0;              /* Remove padding */
-            text-align: center;      /* Center text */
+            line-height: 1;
+            /* Reset line height */
+            padding: 0;
+            /* Remove padding */
+            text-align: center;
+            /* Center text */
         }
 
         .back-button:hover {
@@ -46,13 +52,14 @@
         }
     </style>
 </head>
+
 <body>
     <video autoplay muted loop id="bgVideo">
         <source src="candy.mp4" type="video/mp4">
     </video>
     <div class="container">
         <div class="header-container">
-            <button class="back-button" onclick="playClickAndNavigate('offlineMode.html')">&lt;</button>
+            <button class="back-button" onclick="playClickAndNavigate('onlineMode.html')">&lt;</button>
             <h1 class="rainbow-text">Tic Tac Toe</h1>
         </div>
         <div class="status" id="status">Player X's Turn</div>
@@ -93,6 +100,59 @@
     </audio>
 
     <script>
+        // Game state JSON variable
+        const gameState = {
+            myId: null,
+            data: [
+                ["", "", ""],
+                ["", "", ""],
+                ["", "", ""]
+            ],
+            isRestart: 0,
+            isUndo: 0
+        };
+        let friendId = null;
+        // Call initialize when page loads
+        window.onload = initializeGame;
+
+        // Function to initialize game with IDs
+        function initializeGame() {
+            // Get IDs from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            gameState.myId = urlParams.get('myId');
+            friendId = urlParams.get('friendId');
+
+            // Log IDs in playWithFriendOnline.html
+            console.log('playWithFriendOnline.html - myId:', gameState.myId);
+            console.log('playWithFriendOnline.html - friendId:', friendId);
+
+            // Log gameState values with detailed data array
+            console.log('playWithFriendOnline.html - gameState:', {
+                myId: gameState.myId,
+                data: {
+                    row0: gameState.data[0],
+                    row1: gameState.data[1],
+                    row2: gameState.data[2]
+                },
+                isRestart: gameState.isRestart,
+                isUndo: gameState.isUndo
+            });
+            // [[gameState.data[0][0], gameState.data[0][1], gameState.data[0][2]],
+            // [gameState.data[1][0], gameState.data[1][1], gameState.data[1][2]],
+            // [gameState.data[2][0], gameState.data[2][1], gameState.data[2][2]]]
+            console.log('Encoded:', encodeData(gameState));
+            console.log('decoded:', decodeData(encodeData(gameState)));
+            // console.log each value in the 3x3 array
+            for (let i = 0; i < decodeData(encodeData(gameState)).data.length; i++) {
+                for (let j = 0; j < decodeData(encodeData(gameState)).data[i].length; j++) {
+                    console.log(decodeData(encodeData(gameState)).data[i][j]);  // Logs each value in the 3x3 array
+                }
+            }
+            // Create new player gameState in Database
+            createOrOverwriteFile(gameState.myId+friendId, encodeData(gameState));
+            createOrOverwriteFile(friendId+gameState.myId, encodeData(gameState));
+        }        
+
         function playClickAndNavigate(url) {
             const clickSound = document.getElementById('clickSound');
             clickSound.currentTime = 0;
@@ -100,8 +160,14 @@
             setTimeout(() => {
                 window.location.href = url;
             }, 100); // Small delay to ensure sound plays
+
+            // Delete the files from databasewhen the user clicks the button
+            deleteAllFile(gameState.myId + friendId);
         }
+
+
     </script>
-    <script src="script.js"></script>
+    <script src="playWithOnlineFriendStorage.js"></script>
 </body>
+
 </html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tic Tac Toe - Home</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+        .home-button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1.2rem;
+            background-color: #198754;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 200px;
+        }
+
+        .home-button:hover {
+            background-color: #157347;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+        }
+    </style>
+    <script>
+        function playClickSound() {
+            const clickSound = document.getElementById('clickSound');
+            clickSound.currentTime = 0;
+            clickSound.play().catch(error => console.log("Audio play failed:", error));
+        }
+
+        function playClickAndNavigate(url) {
+            playClickSound();
+            setTimeout(() => {
+                window.location.href = url;
+            }, 100);
+        }
+
+        function exitApp() {
+            playClickSound();
+            setTimeout(() => {
+                // Try Android WebView close (for APK)
+                try {
+                    if (window.Android) {
+                        window.Android.closeApp();
+                        return;
+                    }
+                } catch (e) {
+                    console.log("Not in Android WebView");
+                }
+
+                // Try PWA close
+                try {
+                    if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+                        window.close();
+                        return;
+                    }
+                } catch (e) {
+                    console.log("Not in PWA mode");
+                }
+
+                // For regular browser - try different methods
+                const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+                if (isFirefox) {
+                    window.location.replace('about:blank');
+                }
+
+                // Try closing the window/tab
+                const closed = window.close();
+                
+                // If window.close() didn't work, show a message
+                if (!closed) {
+                    alert('To exit, please close this tab or window manually');
+                }
+            }, 100);
+        }
+    </script>
+
+    <!-- Audio element -->
+    <audio id="clickSound" preload="auto">
+        <source src="click.mp3" type="audio/mpeg">
+    </audio>
+</head>
+<body>
+    <video autoplay muted loop id="bgVideo">
+        <source src="candy.mp4" type="video/mp4">
+    </video>
+    <div class="container">
+        <h1 class="rainbow-text">Tic Tac Toe</h1>
+        <div class="home-buttons">
+            <button class="home-button" onclick="playClickAndNavigate('onlineMode.html')">Online Mode</button>
+            <button class="home-button" onclick="playClickAndNavigate('offlineMode.html')">Offline Mode</button>
+            <button class="home-button" onclick="exitApp()">Exit</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -90,7 +90,7 @@
     </video>
     <div class="container">
         <div class="header-container">
-            <button class="back-button" onclick="playClickAndNavigate('index.html')">&lt;</button>
+            <button class="back-button" onclick="playClickAndNavigate('home.html')">&lt;</button>
             <h1 class="rainbow-text">Tic Tac Toe</h1>
         </div>
         <div class="mode-buttons">
@@ -105,10 +105,14 @@
     </audio>
 
     <script>
-        function playClickAndNavigate(url) {
+        function playClickSound() {
             const clickSound = document.getElementById('clickSound');
             clickSound.currentTime = 0;
             clickSound.play().catch(error => console.log("Audio play failed:", error));
+        }
+
+        function playClickAndNavigate(url) {
+            playClickSound();
             setTimeout(() => {
                 window.location.href = url;
             }, 100);
