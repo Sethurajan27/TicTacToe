@@ -27,7 +27,7 @@ function decodeData(encodedGameState) {
 }
 
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby-0k_Nj_jgmtSza7PVv1_8lnvVbflvIVyVpR5JAoIr9oJBEXufMCKAo8ZHM8DlYKzftw/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzP2wE8nnynl5KZjgiyVYro9gNVK0DxAxKHaOLZymVSOCHYBRoS09gnApYylri3lInR6A/exec';
 
 function sendTextPost(payload, callback) {
   fetch(SCRIPT_URL, {

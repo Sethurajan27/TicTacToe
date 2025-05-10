@@ -149,9 +149,9 @@
                 }
             }
             // Create new player gameState in Database
-            createOrOverwriteFile(gameState.myId+friendId, encodeData(gameState));
-            createOrOverwriteFile(friendId+gameState.myId, encodeData(gameState));
-        }        
+            createOrOverwriteFile(gameState.myId + friendId, encodeData(gameState));
+            createOrOverwriteFile(friendId + gameState.myId, encodeData(gameState));
+        }
 
         function playClickAndNavigate(url) {
             const clickSound = document.getElementById('clickSound');
@@ -160,11 +160,15 @@
             setTimeout(() => {
                 window.location.href = url;
             }, 100); // Small delay to ensure sound plays
-
-            // Delete the files from databasewhen the user clicks the button
-            deleteAllFile(gameState.myId + friendId);
         }
 
+        // Add event listener for page unload/navigation
+        window.addEventListener('beforeunload', function() {
+            console.log(`beforeunload, Deleting files ${gameState.myId + friendId} and ${friendId + gameState.myId}`);
+            // Delete the game files when user leaves the page
+            deleteAllFile(gameState.myId + friendId);
+            deleteAllFile(friendId + gameState.myId);
+        });
 
     </script>
     <script src="playWithOnlineFriendStorage.js"></script>
