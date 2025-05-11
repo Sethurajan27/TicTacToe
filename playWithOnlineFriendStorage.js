@@ -1,76 +1,133 @@
+// Cache the SCRIPT_URL and common strings
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylygkfLD9ykHJc2u_7FdsEaXtm2_Qb90JP-zKMPbC793xwqksbim9p5dI4fYrpmbTemA/exec';
+const CONTENT_TYPE = 'text/plain';
+const COMMA = ',';
+const NEWLINE = '\n';
+
+// Pre-allocate arrays and objects for reuse
+const EMPTY_BOARD = [
+  ['', '', ''],
+  ['', '', ''],
+  ['', '', '']
+];
+const EMPTY_STATE = {
+  id: null,
+  data: EMPTY_BOARD,
+  isRestart: 0,
+  isUndo: 0
+};
+
+// Optimize encodeData for maximum speed
 function encodeData(gameState) {
-    const flatData = [
-        gameState.myId,
-        ...gameState.data[0],
-        ...gameState.data[1],
-        ...gameState.data[2],
-        gameState.isRestart,
-        gameState.isUndo
-    ];
-
-    return flatData.join(',');
+  // Use string concatenation instead of array join for better performance
+  return gameState.id + COMMA +
+    gameState.data[0][0] + COMMA +
+    gameState.data[0][1] + COMMA +
+    gameState.data[0][2] + COMMA +
+    gameState.data[1][0] + COMMA +
+    gameState.data[1][1] + COMMA +
+    gameState.data[1][2] + COMMA +
+    gameState.data[2][0] + COMMA +
+    gameState.data[2][1] + COMMA +
+    gameState.data[2][2] + COMMA +
+    gameState.isRestart + COMMA +
+    gameState.isUndo;
 }
 
+// Optimize decodeData for maximum speed
 function decodeData(encodedGameState) {
-    const dataArray = encodedGameState.split(',');
+  // Use string split with limit for better performance
+  const dataArray = encodedGameState.split(COMMA, 12);
 
-    return {
-        myId: dataArray[0] === "null" ? null : dataArray[0],  // Convert 'null' string back to actual null
-        data: [
-            [dataArray[1], dataArray[2], dataArray[3]],
-            [dataArray[4], dataArray[5], dataArray[6]],
-            [dataArray[7], dataArray[8], dataArray[9]]
-        ],
-        isRestart: parseInt(dataArray[10], 10),  // Convert '0' or '1' to integer
-        isUndo: parseInt(dataArray[11], 10)     // Convert '0' or '1' to integer
-    };
+  // Create new state object with pre-allocated arrays
+  const state = {
+    id: dataArray[0] === "null" ? null : dataArray[0],
+    data: [
+      [dataArray[1], dataArray[2], dataArray[3]],
+      [dataArray[4], dataArray[5], dataArray[6]],
+      [dataArray[7], dataArray[8], dataArray[9]]
+    ],
+    isRestart: dataArray[10] | 0,
+    isUndo: dataArray[11] | 0
+  };
+
+  return state;
 }
 
-
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzP2wE8nnynl5KZjgiyVYro9gNVK0DxAxKHaOLZymVSOCHYBRoS09gnApYylri3lInR6A/exec';
-
+// Optimize sendTextPost for maximum speed
 function sendTextPost(payload, callback) {
   fetch(SCRIPT_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain'
-    },
-    body: payload
+    headers: { 'Content-Type': CONTENT_TYPE },
+    body: payload,
+    keepalive: true,
+    priority: 'high'
   })
     .then(response => response.text())
     .then(data => callback(null, data))
     .catch(error => callback(error, null));
 }
 
-function createOrOverwriteFile(filename, content) {
-  const payload = `action=createOrOverwrite\nfilename=${filename}\ncontent=${content}`;
-  sendTextPost(payload, (err, response) => {
-    if (err) {
-      console.error(`Error creating file ${filename}:`, err);
-    } else {
-      console.log(`File created or overwritten: ${filename}, Response: ${response}`);
-    }
+// Optimize createFile for maximum speed
+function createFile(filename, content) {
+  const payload = `action=create${NEWLINE}filename=${filename}${NEWLINE}content=${content}`;
+  sendTextPost(payload, (err) => {
+    if (err) console.error(`Error creating file ${filename}:`, err);
   });
 }
 
+// Optimize createFile for maximum speed
+function updateFile(filename, content) {
+  const payload = `action=update${NEWLINE}filename=${filename}${NEWLINE}content=${content}`;
+  sendTextPost(payload, (err) => {
+    if (err) console.error(`Error updating file ${filename}:`, err);
+  });
+}
+// Optimize deleteAllFile for maximum speed
 function deleteAllFile(filename) {
-  const payload = `action=delete\nfilename=${filename}`;
-  sendTextPost(payload, (err, response) => {
-    if (err) {
-      console.error(`Error deleting file ${filename}:`, err);
-    } else {
-      console.log(`File deleted: ${filename}, Response: ${response}`);
-    }
+  const payload = `action=delete${NEWLINE}filename=${filename}`;
+  sendTextPost(payload, (err) => {
+    if (err) console.error(`Error deleting file ${filename}:`, err);
   });
 }
 
-function getFileContent(filename) {
-  const payload = `action=get\nfilename=${filename}`;
-  sendTextPost(payload, (err, response) => {
-    if (err) {
-      console.error(`Error fetching file content for ${filename}:`, err);
-    } else {
-      console.log(`File content retrieved: ${filename}, Content: ${response}`);
+// Optimize getFileContent for maximum speed
+async function getFileContent(filename) {
+  try {
+    const payload = `action=get${NEWLINE}filename=${filename}`;
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': CONTENT_TYPE },
+      body: payload,
+      keepalive: true,
+      priority: 'high'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
-  });
+
+    return await response.text();
+
+  } catch (error) {
+    return null;
+  }
+}
+
+// Add a function to check if the game state is valid
+function isValidGameState(state) {
+  return state &&
+    state.data &&
+    state.data.length === 3 &&
+    state.data.every(row => row.length === 3);
+}
+
+// Add a function to create a new game state
+function createNewGameState(id) {
+  return {
+    id: id,
+    data: JSON.parse(JSON.stringify(EMPTY_BOARD)), // Deep copy
+    isRestart: 0,
+    isUndo: 0
+  };
 }

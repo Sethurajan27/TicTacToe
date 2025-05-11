@@ -16,12 +16,6 @@
             margin-bottom: 1rem;
         }
 
-        .cell.disabled {
-            pointer-events: none;
-            opacity: 0.9;
-            /* optional: visual cue */
-        }
-
         .back-button {
             position: absolute;
             left: 0;
@@ -68,7 +62,7 @@
             <button class="back-button" onclick="playClickAndNavigate('onlineMode.html')">&lt;</button>
             <h1 class="rainbow-text">Tic Tac Toe</h1>
         </div>
-        <div class="status" id="status">Anyone Make First Move...</div>
+        <div class="status" id="status">Player X's Turn</div>
         <div class="game-board" id="board">
             <div class="cell" data-cell></div>
             <div class="cell" data-cell></div>
@@ -81,8 +75,8 @@
             <div class="cell" data-cell></div>
         </div>
         <div class="button-container">
-            <!-- <button id="undoButton">Undo</button> -->
-            <!-- <button id="restartButton">Restart</button> -->
+            <button id="undoButton">Undo</button>
+            <button id="restartButton">Restart</button>
         </div>
     </div>
 
@@ -90,7 +84,7 @@
         <div class="popup-content">
             <div class="glitter-container"></div>
             <h2 id="winnerText"></h2>
-            <button id="closePopup" onclick="playAgain()">Play Again</button>
+            <button id="closePopup">Play Again</button>
         </div>
     </div>
 
@@ -127,32 +121,8 @@
             isRestart: 0,
             isUndo: 0
         };
-        //Status text
-        const status = document.getElementById('status');
-        // Get all cells
-        const allCells = document.querySelectorAll('.cell');
         // Call initialize when page loads
         window.onload = initializeGame;
-
-        // Add these constants at the top of your script section
-        const winPopup = document.getElementById('winPopup');
-        const winnerText = document.getElementById('winnerText');
-        const closePopup = document.getElementById('closePopup');
-        const winSound = document.getElementById('winSound');
-        const bonkSound = document.getElementById('bonkSound');
-
-        // Add winning combinations array
-        const winningCombinations = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-            [0, 4, 8], [2, 4, 6] // Diagonals
-        ];
-        // Add losing combinations array
-        const losingCombinations = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-            [0, 4, 8], [2, 4, 6] // Diagonals
-        ];
 
         // Function to initialize game with IDs
         function initializeGame() {
@@ -192,10 +162,8 @@
             friendGameState.isUndo = 0;
 
             // Create initial game state files
-            //First Player with first move because the first player is the one who creates the game
-            createFile(String(myGameState.id) + String(friendGameState.id), encodeData(myGameState));
-            //Second Player with second move because the second player is the one who joins the game
-            createFile(String(friendGameState.id) + String(myGameState.id), encodeData(friendGameState));
+            createOrOverwriteFile(String(myGameState.id) + String(friendGameState.id), encodeData(myGameState));
+            createOrOverwriteFile(String(friendGameState.id) + String(myGameState.id), encodeData(friendGameState));
 
             // Start checking for friend's moves
             startCheckingFriendMoves();
@@ -227,61 +195,16 @@
 
         function checkForChanges(newState) {
             if (!newState || !newState.data) return false;
-
+            
             const newData = newState.data.flat();
             const currentData = friendGameState.data.flat();
-
+            
             for (let i = 0; i < 9; i++) {
                 if (newData[i] !== currentData[i]) {
                     return true;
                 }
             }
             return false;
-        }
-
-        function checkWin() {
-            // Check for X win
-            const xWin = winningCombinations.some(combination => {
-                return combination.every(index => {
-                    const row = Math.floor(index / 3);
-                    const col = index % 3;
-                    return myGameState.data[row][col] === 'X';
-                });
-            });
-
-            // Check for O win
-            const oWin = winningCombinations.some(combination => {
-                return combination.every(index => {
-                    const row = Math.floor(index / 3);
-                    const col = index % 3;
-                    return myGameState.data[row][col] === 'O';
-                });
-            });
-
-            return { xWin, oWin };
-        }
-
-        function checkDraw() {
-            return myGameState.data.every(row => row.every(cell => cell !== ''));
-        }
-
-        function showWinPopup(message, winner) {
-
-            if (winner) {
-                if (winner === 'O') {
-                    winnerText.innerHTML = `You Lose! 😢`;
-                } else {
-                    winnerText.innerHTML = `You Win! 🎉`;
-                }
-                winSound.currentTime = 0;
-                winSound.play().catch(error => console.log("Audio play failed:", error));
-            } else {
-                winnerText.textContent = message;
-                bonkSound.currentTime = 0;
-                bonkSound.play().catch(error => console.log("Audio play failed:", error));
-            }
-
-            winPopup.classList.add('active');
         }
 
         function updateBoardWithFriendMove(friendState) {
@@ -291,27 +214,12 @@
                 const row = Math.floor(i / 3);
                 const col = i % 3;
                 const cell = cells[i];
-
+                
                 if (friendState.data[row][col] === 'X' && myGameState.data[row][col] === '') {
                     myGameState.data[row][col] = 'O';
                     friendGameState.data[row][col] = 'X';
                     cell.textContent = 'O';
                     cell.classList.add('o');
-                    allCells.forEach(cell => cell.classList.remove('disabled'));
-                    status.textContent = "Your Turn";
-
-                    // Check for win or draw
-                    const { xWin, oWin } = checkWin();
-                    if (xWin) {
-                        gameActive = false;
-                        showWinPopup(null, 'X');
-                    } else if (oWin) {
-                        gameActive = false;
-                        showWinPopup(null, 'O');
-                    } else if (checkDraw()) {
-                        gameActive = false;
-                        showWinPopup("It's a Draw! 🤝");
-                    }
                 }
             }
         }
@@ -336,28 +244,16 @@
             myGameState.data[row][col] = 'X';
             cell.textContent = 'X';
             cell.classList.add('x');
-            allCells.forEach(cell => cell.classList.add('disabled'));
-            status.textContent = "Waiting for friend's move...";
 
             const clickSound = document.getElementById('clickSound');
             clickSound.currentTime = 0;
             clickSound.play().catch(error => console.log("Audio play failed:", error));
+            status.textContent = "Waiting for friend's move...";
 
-            // Check for win or draw
-            const { xWin, oWin } = checkWin();
-            if (xWin) {
-                gameActive = false;
-                showWinPopup(null, 'X');
-            } else if (oWin) {
-                gameActive = false;
-                showWinPopup(null, 'O');
-            } else if (checkDraw()) {
-                gameActive = false;
-                showWinPopup("It's a Draw! 🤝");
-            }
-
-            //Update the game state file
-            updateFile(String(myGameState.id) + String(friendGameState.id), encodeData(myGameState));
+            Promise.all([
+                deleteAllFile(String(myGameState.id) + String(friendGameState.id)),
+                createOrOverwriteFile(String(myGameState.id) + String(friendGameState.id), encodeData(myGameState))
+            ]).catch(error => console.error("Error saving game state:", error));
         }
 
         function startCheckingFriendMoves() {
@@ -369,10 +265,12 @@
                     lastCheck = timestamp;
                     getUpdatedFriendGameState().then(updatedFriendState => {
                         if (updatedFriendState) {
-
                             const hasChanges = checkForChanges(updatedFriendState);
                             if (hasChanges) {
                                 updateBoardWithFriendMove(updatedFriendState);
+                                if (status.textContent === "Waiting for friend's move...") {
+                                    status.textContent = "Your Turn (X)";
+                                }
                             }
                         }
                     });
@@ -381,19 +279,6 @@
             }
 
             requestAnimationFrame(checkFriendMoves);
-        }
-        // Add this function to your script section
-        function playAgain() {
-            const clickSound = document.getElementById('clickSound');
-            clickSound.currentTime = 0;
-            clickSound.play().catch(error => console.log("Audio play failed:", error));
-
-            // Update the game state file
-            updateFile(String(myGameState.id) + String(friendGameState.id), encodeData(myGameState));
-            updateFile(String(friendGameState.id) + String(myGameState.id), encodeData(friendGameState));
-
-            // Navigate back to onlineMode.html
-            window.location.href = 'onlineMode.html';
         }
     </script>
     <script src="playWithOnlineFriendStorage.js"></script>
